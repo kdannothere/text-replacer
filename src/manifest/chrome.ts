@@ -12,13 +12,13 @@ const chrome = createManifest(
     host_permissions: ["<all_urls>"],
     commands: baseManifest.commands,
     action: baseManifest.action,
-    // background: {
-    //     service_worker: "src/background.ts",
-    //     type: "module",
-    // },
-    // side_panel: {
-    //     default_path: "index.html", // CRXJS will now see this and bundle index.html
-    // },
+    background: {
+        service_worker: "src/background/index.ts",
+        type: "module",
+    },
+    side_panel: {
+        default_path: "index.html",
+    },
   },
   "chrome"
 )

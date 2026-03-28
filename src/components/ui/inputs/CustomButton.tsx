@@ -41,7 +41,7 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
+function CustomButton({
   className,
   variant = "default",
   size = "default",
@@ -64,4 +64,4 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+export { CustomButton, buttonVariants }
