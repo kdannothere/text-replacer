@@ -1,4 +1,4 @@
-interface Result {
+export interface Result {
     data: string | null;
     error: string | null;
 }

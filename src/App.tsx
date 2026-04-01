@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
-import { Settings } from "lucide-react"
 import CustomSelect from "./components/ui/inputs/CustomSelect"
-import ReplaceText from "./components/ui/ReplaceText"
-import useBrowserStorage from "./components/ui/useBrowserStorage"
+import ReplaceText from "./components/ui/pages/ReplaceText"
+import useBrowserStorage from "./components/ui/utils/useBrowserStorage"
 import { getStorage, sendMessage, setStorage } from "./lib/utils"
 import { COMMAND } from "./background"
+import Settings from "./components/ui/pages/Settings"
 
 type View = "settings" | "findAndReplaceText"
 
@@ -60,8 +60,10 @@ const App = () => {
         </header>
 
         {/* Input Group */}
-        <div className="mb-[15px] flex flex-col">
-          <label className="mb-[5px] cursor-default font-bold">Menu</label>
+        <div className="group mb-[15px] flex flex-col">
+          <label className="mb-[5px] cursor-default text-[12px] font-bold tracking-wider text-[#2c3e50]/70 uppercase transition-colors group-focus-within:text-[#c06ab7]">
+            Select View
+          </label>
           <CustomSelect
             options={viewOptions}
             value={activeView}
@@ -74,11 +76,7 @@ const App = () => {
           {activeView === "findAndReplaceText" && (
             <ReplaceText handleStart={handleStart} />
           )}
-          {activeView === "settings" && (
-            <div className="flex flex-col items-center justify-center p-4">
-              <Settings className="h-8 w-8 text-gray-600" />
-            </div>
-          )}
+          {activeView === "settings" && <Settings />}
         </main>
       </div>
     </div>

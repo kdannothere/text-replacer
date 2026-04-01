@@ -1,41 +1,53 @@
-import { ViewMode } from "@/components/ui/Settings"
-import { getStorage, reloadApp, setStorage } from "@/lib/utils"
-import { findAndReplaceText } from "@/scripts/findAndReplaceText"
+import { ViewMode } from "@/components/ui/pages/Settings"
+import { getStorage, setStorage } from "@/lib/utils"
+import { findAndReplaceText, type Result } from "@/scripts/findAndReplaceText"
 import browser from "webextension-polyfill"
 
 export const COMMAND = {
-  START_ACTION: "start_action",
+  START_ACTION: "START_ACTION",
+  CHANGE_VIEW_MODE: "CHANGE_VIEW_MODE",
 } as const
 
 export type CommandName = (typeof COMMAND)[keyof typeof COMMAND]
 
-browser.runtime.onInstalled.addListener(() => reloadApp())
-
-async function applyViewMode(): Promise<void> {
+async function updateActionBehavior(viewMode: any) {
   try {
-    const storage = await getStorage()
-    const viewMode = storage.viewMode ?? ViewMode.SIDEPANEL
-    const isSidePanel = viewMode == ViewMode.SIDEPANEL
+    const isSidePanel = viewMode === ViewMode.SIDEPANEL
     await (browser as any).sidePanel.setPanelBehavior({
       openPanelOnActionClick: isSidePanel,
     })
+    console.log(
+      `Action behavior updated: ${isSidePanel ? "Side Panel" : "Popup"}`
+    )
   } catch (e) {
-    console.error("SidePanel API not supported or error:", e)
+    console.error("SidePanel API error:", e)
   }
 }
 
-await applyViewMode()
+browser.runtime.onInstalled.addListener(async () => {
+  const storage = await getStorage()
+  const viewMode: ViewMode =
+    (storage.viewMode as ViewMode) ?? ViewMode.SIDEPANEL
+  updateActionBehavior(viewMode)
+})
 
-browser.runtime.onMessage.addListener(async (message: unknown) => {
-  if (message === "start_action") {
+browser.storage.onChanged.addListener(async (changes, area) => {
+  if (area === "local" && changes.viewMode) {
+    updateActionBehavior(changes.viewMode.newValue)
+  }
+})
+
+browser.runtime.onMessage.addListener(async (message: any) => {
+  if (message?.command === COMMAND.START_ACTION) {
     const storage = await getStorage()
     if (storage.status === "ON") {
       console.warn("Previous work is not finished yet...")
       return
     }
-    await handlePerformSingleAction()
+    handlePerformSingleAction()
+    return true
   }
-  console.error("UNKNOWN_COMMAND")
+  console.error("UNKNOWN_COMMAND", message)
 })
 
 async function handlePerformSingleAction(): Promise<void> {
@@ -65,12 +77,10 @@ async function handlePerformSingleAction(): Promise<void> {
         })
         .then(async (result) => {
           const data = result[0].result
-          if (data !== undefined) {
-            // data.data && (await addToLog(data.data + "\n"));
-            // data.error && (await addToLog(data.error + "\n"));
-          } else {
+          if (data === undefined || data === null)
             throw new Error(`Something went wrong.`)
-          }
+          if ((data as Result).error)
+            throw new Error(`Something went wrong: ` + (data as Result).error)
         })
         .catch((error) => {
           throw new Error(`${error.message ? error.message : error}`)

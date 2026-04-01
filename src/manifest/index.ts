@@ -11,7 +11,7 @@ export const baseManifest = {
     "128": "icons/icon128.png",
   },
   commands: {
-    perform_single_action: {
+    START_ACTION: {
       suggested_key: {
         default: "Ctrl+Shift+Z",
         mac: "Command+Shift+Z",
