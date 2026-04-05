@@ -2,7 +2,7 @@
   "name": "text-replacer",
   "private": true,
   "version": "1.1.1",
-  "description": "Text replacer browser tool",
+  "description": "Replace text in text fields on most websites by prepared replacement pairs.",
   "type": "module",
   "scripts": {
     "dev": "vite",

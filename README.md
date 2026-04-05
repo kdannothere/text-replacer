@@ -1,6 +1,6 @@
 # [Install from Chrome Web Store][chrome-web-store-link]
 
-**Text Replacer** gives you ability to replace text in text fields on most websites. You can configure multiple replacement pairs
+**Text Replacer** gives you ability to replace text in text fields on most websites by prepared replacement pairs.
 
 ## Features
 
@@ -14,10 +14,14 @@
 - **Ctrl+Shift+Z** - replace text
 - **Command+Shift+Z** - replace text (Mac device)
 
-All shortcuts are fully customizable in the extension's settings page.
+All shortcuts are fully customizable in the browser extensions page => shortcuts.
 
 ## License
 
 (MIT License) - Copyright (c) 2026 Bohdan Zhykhor
 
-[chrome-web-store-link]: https://chromewebstore.google.com/detail/text-helper/dcdgidbeignabmlpnognmlabaakljjfl
+## Privacy Policy
+
+For details on Privacy Policy, please see the [Privacy Policy](PrivacyPolicy) file.
+
+[chrome-web-store-link]: https://chromewebstore.google.com/detail/text-replacer/nacnebkkgahodngoidbaodigpbpbnell

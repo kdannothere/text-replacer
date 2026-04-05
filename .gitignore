@@ -11,6 +11,9 @@ node_modules
 package-lock.json
 dist
 dist-ssr
+*.crx
+*.pem
+*.zip
 *.local
 
 # Editor directories and files
