@@ -9,6 +9,7 @@ export async function findAndReplaceTextPairs(
   pairs: ReplacementPair[]
 ): Promise<Result[]> {
   console.log("Content script started: findAndReplaceTextPairs")
+
   async function findAndReplaceText(
     find: string,
     replace: string
@@ -27,7 +28,6 @@ export async function findAndReplaceTextPairs(
       function updateInputValue(el: Element, newValue: string) {
         const tagName = el.tagName.toLowerCase()
 
-        // Bypass React's hijacked setter
         if (tagName === "textarea") {
           const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
             window.HTMLTextAreaElement.prototype,
@@ -41,12 +41,17 @@ export async function findAndReplaceTextPairs(
           )?.set
           nativeInputValueSetter?.call(el, newValue)
         } else {
-          ;(el as any).value = newValue // Fallback for custom web components
+          ;(el as any).value = newValue
         }
 
-        // Dispatch events to tell the framework the value changed
-        el.dispatchEvent(new Event("input", { bubbles: true }))
-        el.dispatchEvent(new Event("change", { bubbles: true }))
+        // Dispatch events with standard properties
+        const eventOptions = { bubbles: true, composed: true, cancelable: true }
+        el.dispatchEvent(new Event("focus", eventOptions))
+        el.dispatchEvent(new Event("keydown", eventOptions))
+        el.dispatchEvent(new Event("keyup", eventOptions))
+        el.dispatchEvent(new Event("input", eventOptions))
+        el.dispatchEvent(new Event("change", eventOptions))
+        el.dispatchEvent(new Event("blur", eventOptions))
       }
 
       function traverseDOM(node: Node) {
@@ -62,7 +67,20 @@ export async function findAndReplaceTextPairs(
             return
           }
 
-          // Handle inputs and textareas dynamically
+          // === UPGRADE: Detect CodeMirror Instances ===
+          if (el.classList && el.classList.contains("CodeMirror")) {
+            const cm = (el as any).CodeMirror
+            if (cm && typeof cm.getValue === "function") {
+              const currentValue = cm.getValue()
+              if (currentValue.includes(find)) {
+                cm.setValue(currentValue.split(find).join(replace))
+                matchCount++
+              }
+              return // Skip traversing children so we don't break CodeMirror's DOM
+            }
+          }
+
+          // Handle standard inputs and textareas
           if (
             (tagName === "input" || tagName === "textarea") &&
             typeof (el as any).value === "string"
@@ -84,9 +102,20 @@ export async function findAndReplaceTextPairs(
         if (node.nodeType === Node.TEXT_NODE && node.nodeValue) {
           if (node.nodeValue.includes(find)) {
             node.nodeValue = node.nodeValue.split(find).join(replace)
-            // Note: Changing standard text nodes is still vulnerable to being
-            // overwritten by React/Vue if the parent component re-renders.
             matchCount++
+
+            // === UPGRADE: Dispatch events for contenteditable divs (e.g., Notion, Twitter) ===
+            const parentElement = node.parentElement
+            if (parentElement) {
+              const editableParent = parentElement.closest(
+                '[contenteditable="true"]'
+              )
+              if (editableParent) {
+                editableParent.dispatchEvent(
+                  new Event("input", { bubbles: true, composed: true })
+                )
+              }
+            }
           }
         }
 

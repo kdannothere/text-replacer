@@ -84,6 +84,7 @@ async function handlePerformSingleAction(): Promise<void> {
           target: { tabId: tab.id as number },
           func: findAndReplaceTextPairs,
           args: [pairs],
+          world: "MAIN",
         })
         .then((result) => {
           // result[0].result is the array returned by findAndReplaceTextPairs
