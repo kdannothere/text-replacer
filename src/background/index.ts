@@ -37,8 +37,8 @@ browser.storage.onChanged.addListener(async (changes, area) => {
   }
 })
 
-browser.runtime.onMessage.addListener(async (message: any) => {
-  if (message?.command === COMMAND.START_ACTION) {
+async function executeByCommand(command: string) {
+  if (command === COMMAND.START_ACTION) {
     const storage = await getStorage()
     if (storage.status === "ON") {
       console.warn("Previous work is not finished yet...")
@@ -47,7 +47,15 @@ browser.runtime.onMessage.addListener(async (message: any) => {
     handlePerformSingleAction()
     return true
   }
-  console.error("UNKNOWN_COMMAND", message)
+  console.error("UNKNOWN_COMMAND:", command)
+}
+
+browser.commands.onCommand.addListener(async (command: string) => {
+  executeByCommand(command)
+})
+
+browser.runtime.onMessage.addListener(async (message: any) => {
+  executeByCommand(message?.command ?? "UNKNOWN_COMMAND")
 })
 
 async function handlePerformSingleAction(): Promise<void> {
