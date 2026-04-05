@@ -53,16 +53,10 @@ const App = () => {
   return (
     <div className="min-h-screen min-w-[250px] bg-[#f4f4f4] p-2 font-sans text-[14px] text-[#000000] antialiased">
       <div className="flex w-full flex-col flex-nowrap">
-        <header className="mb-5 flex items-center">
-          <h1 className="m-0 text-[1.5em] font-bold text-[#2c3e50]">
-            Extension Tool
-          </h1>
-        </header>
-
         {/* Input Group */}
         <div className="group mb-[15px] flex flex-col">
           <label className="mb-[5px] cursor-default text-[12px] font-bold tracking-wider text-[#2c3e50]/70 uppercase transition-colors group-focus-within:text-[#c06ab7]">
-            Select View
+            Menu
           </label>
           <CustomSelect
             options={viewOptions}

@@ -1,6 +1,9 @@
 import { ViewMode } from "@/components/ui/pages/Settings"
 import { getStorage, setStorage } from "@/lib/utils"
-import { findAndReplaceText, type Result } from "@/scripts/findAndReplaceText"
+import {
+  findAndReplaceTextPairs,
+  type Result,
+} from "@/scripts/findAndReplaceText"
 import browser from "webextension-polyfill"
 
 export const COMMAND = {
@@ -75,20 +78,31 @@ async function handlePerformSingleAction(): Promise<void> {
     const feature = storage.lastActiveViewId || "findAndReplaceText"
 
     if (feature === "findAndReplaceText") {
-      const textToFind = storage.textToFind ?? ""
-      const textToReplaceWith = storage.textToReplaceWith ?? ""
+      const pairs = storage.replacementPairs ?? []
       await browser.scripting
         .executeScript({
           target: { tabId: tab.id as number },
-          func: findAndReplaceText,
-          args: [textToFind, textToReplaceWith],
+          func: findAndReplaceTextPairs,
+          args: [pairs],
         })
-        .then(async (result) => {
-          const data = result[0].result
-          if (data === undefined || data === null)
-            throw new Error(`Something went wrong.`)
-          if ((data as Result).error)
-            throw new Error(`Something went wrong: ` + (data as Result).error)
+        .then((result) => {
+          // result[0].result is the array returned by findAndReplaceTextPairs
+          const data = result[0].result as Result[] | null | undefined
+
+          if (!data || !Array.isArray(data)) {
+            throw new Error(`Something went wrong: No data returned.`)
+          }
+
+          // Check if any result in the array contains an error
+          const errors = data
+            .filter((item) => item.error)
+            .map((item) => item.error)
+
+          if (errors.length > 0) {
+            throw new Error(`Errors occurred: ${errors.join("; ")}`)
+          }
+
+          console.log("Success! Processed pairs:", data.length)
         })
         .catch((error) => {
           throw new Error(`${error.message ? error.message : error}`)
@@ -101,5 +115,6 @@ async function handlePerformSingleAction(): Promise<void> {
     console.error(errorMessage)
   } finally {
     await setStorage({ status: "OFF" })
+    console.log("Action finished: handlePerformSingleAction")
   }
 }
